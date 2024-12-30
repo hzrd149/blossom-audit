@@ -8,12 +8,14 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc && vite build",
-    "format": "prettier -w ."
+    "format": "prettier -w .",
+    "pages": "mkdir -p pages/lib && cp -r dist/* pages/lib"
   },
   "files": [
     "dist"
   ],
   "devDependencies": {
+    "@changesets/cli": "^2.27.11",
     "@types/debug": "^4.1.12",
     "@types/node": "^22.10.2",
     "prettier": "^3.4.2",

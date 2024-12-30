@@ -1,4 +1,4 @@
-import { PublicUploadAudit } from "../dist/blossom-server-audit.js";
+import { PublicUploadAudit } from "blossom-server-audit";
 
 async function getExampleBlob(url) {
   const fileUrl = new URL("../assets/bitcoin.pdf", import.meta.url).href;
