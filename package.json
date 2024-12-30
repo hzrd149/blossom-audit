@@ -27,5 +27,6 @@
     "@noble/hashes": "^1.6.1",
     "debug": "^4.4.0",
     "eventemitter3": "^5.0.1"
-  }
+  },
+  "packageManager": "pnpm@9.14.4"
 }
