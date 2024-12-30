@@ -1,0 +1,11 @@
+{
+  "relays": ["wss://relay.damus.io", "wss://nostrue.com", "wss://purplerelay.com"],
+  "servers": ["https://cdn.hzrd149.com", "https://nostr.download"],
+  "profile": {
+    "name": "cherry-tree",
+    "about": "Chunked blobs over blossom"
+  },
+  "publishProfile": true,
+  "publishServerList": true,
+  "publishRelayList": true
+}

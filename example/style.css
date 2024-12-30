@@ -1,0 +1,66 @@
+details.audit {
+  border: 1px solid gray;
+  border-radius: 0.2rem;
+  padding: 0.5rem;
+  margin: 0.5em 0;
+}
+
+details.audit[open] > summary {
+  margin-bottom: 0.5rem;
+}
+
+/* audit icons */
+details.audit > summary {
+  font-weight: bold;
+  list-style-type: "⏳";
+  color: darkblue;
+}
+details.audit.complete.fail > summary {
+  list-style-type: "❌";
+  color: darkred;
+}
+details.audit.complete.warn > summary {
+  list-style-type: "🟠";
+  color: darkorange;
+}
+details.audit.complete.pass > summary {
+  list-style-type: "✅";
+  color: darkgreen;
+}
+details.audit.error > summary {
+  list-style-type: "❌";
+  color: darkred;
+}
+
+/* result colors */
+details.result.pass summary {
+  color: darkgreen;
+  list-style-type: "✅";
+}
+details.result.fail summary {
+  color: darkred;
+  list-style-type: "❌";
+}
+details.result.warn summary {
+  color: darkorange;
+  list-style-type: "🟠";
+}
+details.result.info summary {
+  color: darkblue;
+  list-style-type: "🔵";
+}
+
+pre.error {
+  color: red;
+}
+
+/* base */
+p {
+  margin: 0;
+}
+
+details summary {
+  list-style-position: outside;
+  padding-left: 0.5em;
+  margin-left: 1em;
+}

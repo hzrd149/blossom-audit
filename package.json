@@ -1,0 +1,29 @@
+{
+  "name": "blossom-server-audit",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/blossom-server-audit.cjs",
+  "module": "./dist/blossom-server-audit.js",
+  "browser": "./dist/blossom-server-audit.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc && vite build",
+    "format": "prettier -w ."
+  },
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@types/debug": "^4.1.12",
+    "@types/node": "^22.10.2",
+    "prettier": "^3.4.2",
+    "typescript": "~5.6.2",
+    "vite": "^6.0.5",
+    "vite-plugin-dts": "^4.4.0"
+  },
+  "dependencies": {
+    "@noble/hashes": "^1.6.1",
+    "debug": "^4.4.0",
+    "eventemitter3": "^5.0.1"
+  }
+}
