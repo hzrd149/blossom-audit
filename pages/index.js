@@ -1,83 +1,82 @@
-import { PublicUploadAudit } from "blossom-server-audit";
+import { fullAudit, group, hooks } from "blossom-server-audit";
 
-async function getExampleBlob(url) {
+async function getExampleBlob() {
   const fileUrl = new URL("../assets/bitcoin.pdf", import.meta.url).href;
   const response = await fetch(fileUrl);
   return await response.blob();
 }
 
-function outputResult(result, parent) {
-  const element = document.createElement("details");
-  element.classList.add("result");
+const elements = new Map();
 
-  element.classList.add(result.type);
-  const summary = document.createElement("summary");
-  summary.textContent = `${result.type.toUpperCase()}: ${result.summary}`;
-  element.appendChild(summary);
+function getResultElement(result) {
+  if (!elements.has(result)) {
+    const element = document.createElement("details");
+    element.open = !!result.children;
+    elements.set(result, element);
 
-  if (result.description) {
+    element.className = `result ${result.type} ${!!result.children ? "group" : ""}`;
+
+    const summary = document.createElement("summary");
+    summary.className = "summary";
+    summary.textContent = result.name;
+    element.appendChild(summary);
+
     const description = document.createElement("p");
-    description.textContent = result.description;
+    description.className = "description";
+    description.style.display = result.description ? "initial" : "none";
+    if (result.description) description.textContent = result.description;
     element.appendChild(description);
-  }
-  if (result.see) {
+
     const link = document.createElement("a");
-    link.href = result.see;
+    link.className = "link";
     link.textContent = "see";
+    link.setAttribute("target", "_blank");
+    link.style.display = result.see ? "initial" : "none";
+    if (result.see) link.href = result.see;
     element.appendChild(link);
+
+    // append to parent
+    if (result.parent) {
+      const parentElement = getResultElement(result.parent);
+      parentElement.appendChild(element);
+    } else {
+      document.getElementById("output").appendChild(element);
+    }
   }
 
-  parent.appendChild(element);
+  return elements.get(result);
 }
 
-function outputAudit(audit, parent) {
-  const element = document.createElement("details");
-  element.classList.add("audit");
-  element.open = true;
+function updateResult(result) {
+  const element = getResultElement(result);
 
-  const summary = document.createElement("summary");
-  summary.textContent = audit.name;
-  element.appendChild(summary);
+  element.className = `result ${result.type} ${!!result.children ? "group" : ""}`;
+  element.querySelector(".summary").textContent = result.summary;
 
-  const results = document.createElement("div");
-  element.appendChild(results);
+  element.querySelector(".description").style.display = result.description ? "initial" : "none";
+  element.querySelector(".link").style.display = result.see ? "initial" : "none";
 
-  audit.on("result", (result) => outputResult(result, results));
+  if (result.description) element.querySelector(".description").textContent = result.description;
+  if (result.see) element.querySelector(".link").href = result.see;
 
-  // attach to children
-  audit.on("child", (child) => outputAudit(child, element));
-
-  audit.on("error", (error) => {
-    element.classList.add("error");
-
-    const code = document.createElement("pre.error");
-    code.textContent = error.message;
-    element.appendChild(code);
-  });
-  audit.on("complete", () => {
-    element.classList.add("complete");
-    element.classList.add(audit.status);
-  });
-
-  parent.appendChild(element);
+  if (result.parent) updateResult(result.parent);
 }
 
-// run upload audit
-document.getElementById("run").addEventListener("click", async () => {
-  try {
-    // clean output
-    document.getElementById("output").innerHTML = "";
+hooks.onResult = updateResult;
 
-    const server = document.getElementById("server").value;
-    if (!URL.canParse(server)) throw new Error("Invalid server URL");
+const form = document.getElementById("form");
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
 
-    const blob = await getExampleBlob();
-    const audit = new PublicUploadAudit("public upload", blob, { server });
+  const formData = new FormData(form);
+  const values = Object.fromEntries(formData);
 
-    outputAudit(audit, document.getElementById("output"));
+  // clear output
+  document.getElementById("output").innerHTML = "";
+  elements.clear();
 
-    await audit.run();
-  } catch (error) {
-    outputResult(error);
-  }
+  const ctx = { server: values.server };
+  const blob = await getExampleBlob();
+
+  await group(values.server, fullAudit(ctx, blob));
 });

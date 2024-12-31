@@ -17,8 +17,12 @@
     <link rel="stylesheet" href="../pages/style.css" />
   </head>
   <body>
-    <input type="url" name="server" id="server" />
-    <button id="run">Run audit</button>
+    <form id="form">
+      <input type="url" name="server" required />
+      <button type="submit">Run audit</button>
+    </form>
+
+    <p>NOTE: Some network requests cant be made in the browser</p>
 
     <div id="output"></div>
   </body>

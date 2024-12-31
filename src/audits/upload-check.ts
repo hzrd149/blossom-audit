@@ -1,44 +1,42 @@
-import { Audit } from "../audit";
+import { group, info } from "../audit";
 import { getBlobSha256 } from "../helpers/blob";
-import { CorsHeadersAudit } from "./cors-headers";
-import { ErrorResponseAudit } from "./error-response";
+import { corsResponseHeadersAudit } from "./cors-response-headers";
+import { errorResponseAudit } from "./error-response";
 
-export class UploadCheckAudit extends Audit<Blob, { server: string }> {
-  protected async audit() {
-    const blob = this.input;
-    const endpoint = new URL("/upload", this.config.server);
+export async function* uploadCheckAudit(ctx: { server: string }, blob: Blob) {
+  const endpoint = new URL("/upload", ctx.server);
+  const hash = await getBlobSha256(blob);
 
-    // BUD-06 check
-    const check = await fetch(endpoint, {
-      method: "HEAD",
-      headers: {
-        "x-content-length": String(blob.size),
-        "x-content-type": blob.type,
-        "x-sha256": await getBlobSha256(blob),
-      },
+  // BUD-06 check
+  const check = await fetch(endpoint, {
+    method: "HEAD",
+    headers: {
+      "x-content-length": String(blob.size),
+      "x-content-type": blob.type,
+      "x-sha256": hash,
+    },
+  });
+
+  // check if supported
+  if (check.status === 404) {
+    yield info({
+      summary: "BUD-06 upload check is not supported",
+      see: "https://github.com/hzrd149/blossom/blob/master/buds/06.md",
     });
 
-    // check if supported
-    if (check.status === 404) {
-      this.info({
-        summary: "BUD-06 upload check is not supported",
-        see: "https://github.com/hzrd149/blossom/blob/master/buds/06.md",
-      });
+    console.log("HEAD endpoint not supported, skipping checks");
 
-      this.log("HEAD endpoint not supported, skipping checks");
+    // exit
+    return;
+  }
 
-      // exit
-      return;
-    }
+  // audit CORS headers
+  yield await group("CORS Headers", corsResponseHeadersAudit(ctx, check.headers));
 
-    // audit CORS headers
-    await this.runChildAudit(CorsHeadersAudit, "cors headers", check.headers);
+  if (check.ok) console.log("Upload check passed");
+  else {
+    console.log(`Check failed ${check.status}: ${check.headers.get("x-reason")}`);
 
-    if (check.ok) this.log("Upload check passed");
-    else {
-      this.log(`Check failed ${check.status}: ${check.headers.get("x-reason")}`);
-
-      await this.runChildAudit(ErrorResponseAudit, "error response", check);
-    }
+    yield await group("Error Response", errorResponseAudit(ctx, check));
   }
 }

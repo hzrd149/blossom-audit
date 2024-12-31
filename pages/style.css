@@ -1,53 +1,35 @@
-details.audit {
+details.group {
   border: 1px solid gray;
   border-radius: 0.2rem;
   padding: 0.5rem;
   margin: 0.5em 0;
 }
 
-details.audit[open] > summary {
+details.group[open] > summary {
   margin-bottom: 0.5rem;
 }
 
 /* audit icons */
-details.audit > summary {
+details.result.loading > summary {
   font-weight: bold;
   list-style-type: "⏳";
-  color: darkblue;
+  color: darkgray;
 }
-details.audit.complete.fail > summary {
+details.result.fail > summary {
   list-style-type: "❌";
   color: darkred;
 }
-details.audit.complete.warn > summary {
+details.result.warn > summary {
   list-style-type: "🟠";
   color: darkorange;
 }
-details.audit.complete.pass > summary {
+details.result.pass > summary {
   list-style-type: "✅";
   color: darkgreen;
 }
-details.audit.error > summary {
-  list-style-type: "❌";
-  color: darkred;
-}
-
-/* result colors */
-details.result.pass summary {
-  color: darkgreen;
-  list-style-type: "✅";
-}
-details.result.fail summary {
-  color: darkred;
-  list-style-type: "❌";
-}
-details.result.warn summary {
-  color: darkorange;
-  list-style-type: "🟠";
-}
-details.result.info summary {
-  color: darkblue;
+details.result.info > summary {
   list-style-type: "🔵";
+  color: darkblue;
 }
 
 pre.error {
@@ -57,6 +39,7 @@ pre.error {
 /* base */
 p {
   margin: 0;
+  white-space: pre-wrap;
 }
 
 details summary {
