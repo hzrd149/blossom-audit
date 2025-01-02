@@ -2,8 +2,8 @@
   "relays": ["wss://relay.damus.io", "wss://nostrue.com", "wss://purplerelay.com"],
   "servers": ["https://cdn.hzrd149.com", "https://nostr.download"],
   "profile": {
-    "name": "blossom-server-audit",
-    "about": "A simple web app for auditing blossom servers"
+    "name": "blossom-audit",
+    "about": "A simple cli and web app for auditing blossom servers"
   },
   "publishProfile": true,
   "publishServerList": true,
