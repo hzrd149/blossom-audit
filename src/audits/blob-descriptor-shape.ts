@@ -1,5 +1,6 @@
-import { fail, info, pass, warn } from "../audit";
-import { BLOSSOM_NIP94_DOCS, NIP94_DOCS } from "../const";
+import { fail, info, pass, warn } from "../audit.js";
+import { BLOSSOM_NIP94_DOCS, NIP94_DOCS } from "../const.js";
+import { BlobDescriptor } from "../types.js";
 
 export async function* blobDescriptorShapeAudit(_ctx: any, blob: Record<string, any>) {
   // check url
@@ -106,4 +107,6 @@ export async function* blobDescriptorShapeAudit(_ctx: any, blob: Record<string, 
       }
     }
   }
+
+  return blob as BlobDescriptor;
 }

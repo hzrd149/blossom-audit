@@ -1,7 +1,7 @@
-import { group, info } from "../audit";
-import { getBlobSha256 } from "../helpers/blob";
-import { corsResponseHeadersAudit } from "./cors-response-headers";
-import { errorResponseAudit } from "./error-response";
+import { group, info } from "../audit.js";
+import { getBlobSha256 } from "../helpers/blob.js";
+import { corsResponseHeadersAudit } from "./cors-response-headers.js";
+import { errorResponseAudit } from "./error-response.js";
 
 export async function* uploadCheckAudit(ctx: { server: string }, blob: Blob) {
   const endpoint = new URL("/upload", ctx.server);
@@ -31,12 +31,12 @@ export async function* uploadCheckAudit(ctx: { server: string }, blob: Blob) {
   }
 
   // audit CORS headers
-  yield await group("CORS Headers", corsResponseHeadersAudit(ctx, check.headers));
+  yield* group("CORS Headers", corsResponseHeadersAudit(ctx, check.headers));
 
   if (check.ok) console.log("Upload check passed");
   else {
     console.log(`Check failed ${check.status}: ${check.headers.get("x-reason")}`);
 
-    yield await group("Error Response", errorResponseAudit(ctx, check));
+    yield* group("Error Response", errorResponseAudit(ctx, check));
   }
 }

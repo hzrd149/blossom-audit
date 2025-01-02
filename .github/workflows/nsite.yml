@@ -26,11 +26,8 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
-      - name: Build library
-        run: pnpm build
-
-      - name: Copy to pages
-        run: pnpm pages
+      - name: Build app
+        run: pnpm app
 
       - name: Deploy nsite
-        run: npx -y nsite-cli upload pages --verbose --purge --privatekey ${{ secrets.NSITE_KEY }}
+        run: npx -y nsite-cli upload public --verbose --purge --privatekey ${{ secrets.NSITE_KEY }}

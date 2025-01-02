@@ -1,4 +1,4 @@
-import { fail, info, pass, warn } from "../audit";
+import { fail, info, pass, warn } from "../audit.js";
 import {
   BLOSSOM_CORS_DOCS,
   CORS_ALLOW_HEADERS,
@@ -8,7 +8,7 @@ import {
   CORS_ALLOW_ORIGIN,
   CORS_EXPOSE_HEADERS,
   CORS_EXPOSE_HEADERS_DOCS,
-} from "../const";
+} from "../const.js";
 
 export async function* corsResponseHeadersAudit(_ctx: any, headers: Headers) {
   // check CORS allow origin

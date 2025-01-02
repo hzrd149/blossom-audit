@@ -1,4 +1,4 @@
-import { fail, pass } from "../audit";
+import { fail, pass } from "../audit.js";
 
 export async function* errorResponseAudit(_ctx: any, res: Response) {
   if (res.headers.has("x-reason"))

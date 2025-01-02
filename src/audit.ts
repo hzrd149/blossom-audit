@@ -16,83 +16,95 @@ export type Pass = Base & { type: "pass" };
 export type Fail = Base & { type: "fail" };
 export type Warn = Base & { type: "warn" };
 export type Info = Base & { type: "info" };
+export type Err = Base & { type: "error" };
 
-export type Result = Pass | Fail | Warn | Info;
+export type Result = Pass | Fail | Warn | Info | Err;
 export type ResultInit = Omit<Base, "parent" | "children">;
-
-// helpers
-export function pass(message: string | ResultInit, children?: Result[]): Pass {
-  return typeof message === "string"
-    ? { type: "pass", summary: message, children }
-    : { type: "pass", ...message, children };
-}
-export function info(message: string | ResultInit, children?: Result[]): Info {
-  return typeof message === "string"
-    ? { type: "info", summary: message, children }
-    : { type: "info", ...message, children };
-}
-export function fail(message: string | ResultInit, children?: Result[]): Fail {
-  return typeof message === "string"
-    ? { type: "fail", summary: message, children }
-    : { type: "fail", ...message, children };
-}
-export function warn(message: string | ResultInit, children?: Result[]): Warn {
-  return typeof message === "string"
-    ? { type: "warn", summary: message, children }
-    : { type: "warn", ...message, children };
-}
 
 export const hooks = {
   onGroupStart: (_group: Result) => {},
   onGroupEnd: (_group: Result) => {},
+  onGroup: (_group: Result) => {},
   onResult: (_result: Result) => {},
 };
+let stack: Result[] = [];
 
-let groupStack: Result[] = [];
-export async function group(
+// helpers to add items to context
+export function item(
+  type: "pass" | "fail" | "info" | "warn" | "error",
+  message: string | ResultInit,
+  children?: Result[],
+) {
+  const parent = stack[stack.length - 1];
+  if (!parent) throw new Error("Cant add an item without a parent group");
+
+  const item: Result =
+    typeof message === "string" ? { type: type, summary: message, children } : { type: type, ...message, children };
+
+  item.parent = parent;
+  if (!parent.children) parent.children = [];
+  parent.children.push(item);
+
+  hooks.onResult(item);
+
+  return item;
+}
+export function pass(message: string | ResultInit, children?: Result[]): Pass {
+  return item("pass", message, children) as Pass;
+}
+export function info(message: string | ResultInit, children?: Result[]): Info {
+  return item("info", message, children) as Info;
+}
+export function fail(message: string | ResultInit, children?: Result[]): Fail {
+  return item("fail", message, children) as Fail;
+}
+export function warn(message: string | ResultInit, children?: Result[]): Warn {
+  return item("warn", message, children) as Warn;
+}
+export function err(message: string | ResultInit, children?: Result[]): Err {
+  return item("error", message, children) as Err;
+}
+
+// start a new audit group
+export async function* group<T>(
   name: string,
-  generators: AsyncGenerator<Result, void, any> | AsyncGenerator<Result, void, any>[],
+  generator: AsyncGenerator<Result, T, any>,
   successResult?: string | ResultInit,
   failureResult?: string | ResultInit,
-): Promise<Result> {
-  generators = Array.isArray(generators) ? generators : [generators];
+): AsyncGenerator<Result, T | undefined, any> {
   const children: Result[] = [];
   const group = { type: "info", summary: name, children } as Result;
 
-  if (groupStack.length > 0) group.parent = groupStack[groupStack.length - 1];
-  groupStack.push(group);
+  if (stack.length > 0) {
+    const parent = stack[stack.length - 1];
+    group.parent = parent;
+    if (!parent.children) parent.children = [];
+    parent.children.push(group);
+  }
+  stack.push(group);
 
-  console.group(name);
+  hooks.onGroup(group);
+
   hooks.onGroupStart(group);
 
+  let result: IteratorResult<Result, T>;
   try {
-    for (const generator of generators) {
-      for await (const result of generator) {
+    while (!(result = await generator.next()).done) {
+      if (!result.done) {
+        const item = result.value;
+
         // add result to this group
-        children.push(result);
-        result.parent = group;
+        if (!item.parent) {
+          children.push(item);
+          item.parent = group;
 
-        switch (result.type) {
-          case "pass":
-            console.log("✅ " + [result.summary, result.description, result.see].filter(Boolean).join("\n"));
-            break;
-          case "fail":
-            console.log("❌ " + [result.summary, result.description, result.see].filter(Boolean).join("\n"));
-            break;
-          case "warn":
-            console.log("🟠 " + [result.summary, result.description, result.see].filter(Boolean).join("\n"));
-            break;
-          case "info":
-            console.log("🔵 " + [result.summary, result.description, result.see].filter(Boolean).join("\n"));
-            break;
+          hooks.onResult(item);
         }
-
-        hooks.onResult(result);
       }
     }
 
     // set result type based on children results
-    if (children.some((r) => r.type === "fail")) {
+    if (children.some((r) => r.type === "fail" || r.type === "error")) {
       const overwrite = failureResult || successResult;
       if (overwrite) Object.assign(group, fail(overwrite, children));
       else group.type = "fail";
@@ -103,16 +115,41 @@ export async function group(
       if (successResult) Object.assign(group, successResult);
       else group.type = "pass";
     }
+
+    stack.pop();
+    hooks.onGroupEnd(group);
+
+    yield group;
+
+    // result the result
+    return result.value;
   } catch (error) {
     if (error instanceof Error) {
+      const item: Err = { type: "error", summary: error.message, description: error.stack, parent: group };
+      children.push(item);
+      hooks.onResult(item);
+
       group.type = "fail";
-      group.description = error.message;
+    }
+
+    stack.pop();
+    hooks.onGroupEnd(group);
+
+    yield group;
+
+    return;
+  }
+}
+
+export async function audit(generators: AsyncGenerator<Result, any, any> | AsyncGenerator<Result, any, any>[]) {
+  if (!Array.isArray(generators)) generators = [generators];
+
+  const results: Result[] = [];
+  for (const generator of generators) {
+    for await (const item of generator) {
+      results.push(item);
     }
   }
 
-  groupStack.pop();
-
-  console.groupEnd();
-  hooks.onGroupEnd(group);
-  return group;
+  return results;
 }

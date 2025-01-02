@@ -43,11 +43,8 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
-      - name: Build library
-        run: pnpm build
-
-      - name: Copy to pages
-        run: pnpm pages
+      - name: Build app
+        run: pnpm app
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -55,7 +52,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "./pages"
+          path: "./public"
 
       - name: Deploy to GitHub Pages
         id: deployment

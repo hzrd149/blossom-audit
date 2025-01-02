@@ -19,6 +19,10 @@ details.result.fail > summary {
   list-style-type: "❌";
   color: darkred;
 }
+details.result.error > summary {
+  list-style-type: "❌";
+  color: red;
+}
 details.result.warn > summary {
   list-style-type: "🟠";
   color: darkorange;

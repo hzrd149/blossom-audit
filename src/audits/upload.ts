@@ -1,19 +1,19 @@
-import { fail, group, pass } from "../audit";
-import { getBlobSha256 } from "../helpers/blob";
-import { blobDescriptorShapeAudit } from "./blob-descriptor-shape";
-import { corsResponseHeadersAudit } from "./cors-response-headers";
-import { endpointCorsHeadersAudit } from "./endpoint-cors-headers";
-import { errorResponseAudit } from "./error-response";
-import { uploadCheckAudit } from "./upload-check";
+import { fail, group, pass } from "../audit.js";
+import { getBlobSha256 } from "../helpers/blob.js";
+import { blobDescriptorShapeAudit } from "./blob-descriptor-shape.js";
+import { corsResponseHeadersAudit } from "./cors-response-headers.js";
+import { endpointCorsHeadersAudit } from "./endpoint-cors-headers.js";
+import { errorResponseAudit } from "./error-response.js";
+import { uploadCheckAudit } from "./upload-check.js";
 
 export async function* uploadAudit(ctx: { server: string }, blob: Blob) {
   const endpoint = new URL("/upload", ctx.server);
 
   // check cors headers
-  yield await group("Check CORS", endpointCorsHeadersAudit(ctx, "/upload"));
+  yield* group("Check CORS", endpointCorsHeadersAudit(ctx, "/upload"));
 
   // BUD-06 check
-  yield await group("Upload Check", uploadCheckAudit(ctx, blob));
+  yield* group("Upload Check", uploadCheckAudit(ctx, blob));
 
   const sha256 = await getBlobSha256(blob);
   console.log(`calculated hash ${sha256}`);
@@ -21,7 +21,7 @@ export async function* uploadAudit(ctx: { server: string }, blob: Blob) {
   const upload = await fetch(endpoint, { method: "PUT", headers: { "x-sha256": sha256 } });
 
   // audit CORS headers
-  yield await group("CORS Headers", corsResponseHeadersAudit(ctx, upload.headers));
+  yield* group("CORS Response Headers", corsResponseHeadersAudit(ctx, upload.headers));
 
   if (upload.ok) {
     console.log("Upload success");
@@ -36,21 +36,19 @@ export async function* uploadAudit(ctx: { server: string }, blob: Blob) {
     let result: any;
     try {
       result = await upload.json();
+
+      // check blob descriptor
+      return yield* group("Blob Descriptor", blobDescriptorShapeAudit(ctx, result));
     } catch (error) {
       yield fail({
         summary: "Response body is not valid JSON",
         description: String(error),
         see: "https://github.com/hzrd149/blossom/blob/master/buds/02.md#put-upload---upload-blob",
       });
-
-      return; // abort
     }
-
-    // check blob descriptor
-    yield await group("Blob Descriptor", blobDescriptorShapeAudit(ctx, result));
   } else {
     console.log(`Upload failed ${upload.status}: ${upload.headers.get("x-reason")}`);
 
-    yield await group("Error Response", errorResponseAudit(ctx, upload));
+    yield* group("Error Response", errorResponseAudit(ctx, upload));
   }
 }

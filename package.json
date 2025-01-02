@@ -7,9 +7,10 @@
   "browser": "./dist/blossom-server-audit.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc && vite build",
-    "format": "prettier -w .",
-    "pages": "mkdir -p pages/lib && cp -r dist/* pages/lib"
+    "build": "tsc",
+    "app": "vite build --outDir public",
+    "dev": "vite serve",
+    "format": "prettier -w ."
   },
   "files": [
     "dist"

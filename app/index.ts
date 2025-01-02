@@ -1,4 +1,5 @@
-import { fullAudit, group, hooks } from "blossom-server-audit";
+import { audit, uploadDownloadAudit, group, hooks } from "../src/index";
+import "./style.css";
 
 async function getExampleBlob() {
   const fileUrl = new URL("../assets/bitcoin.pdf", import.meta.url).href;
@@ -6,6 +7,7 @@ async function getExampleBlob() {
   return await response.blob();
 }
 
+const output = document.getElementById("output")!;
 const elements = new Map();
 
 function getResultElement(result) {
@@ -40,7 +42,7 @@ function getResultElement(result) {
       const parentElement = getResultElement(result.parent);
       parentElement.appendChild(element);
     } else {
-      document.getElementById("output").appendChild(element);
+      output.appendChild(element);
     }
   }
 
@@ -62,21 +64,49 @@ function updateResult(result) {
   if (result.parent) updateResult(result.parent);
 }
 
-hooks.onResult = updateResult;
+hooks.onGroup = updateResult;
+hooks.onGroupStart = (group) => {
+  console.group(group.summary);
+};
+hooks.onGroupEnd = (group) => {
+  console.groupEnd();
+  updateResult(group);
+};
+hooks.onResult = (item) => {
+  switch (item.type) {
+    case "pass":
+      console.log("✅ " + [item.summary, item.description, item.see].filter(Boolean).join("\n"));
+      break;
+    case "fail":
+      console.log("❌ " + [item.summary, item.description, item.see].filter(Boolean).join("\n"));
+      break;
+    case "warn":
+      console.log("🟠 " + [item.summary, item.description, item.see].filter(Boolean).join("\n"));
+      break;
+    case "info":
+      console.log("🔵 " + [item.summary, item.description, item.see].filter(Boolean).join("\n"));
+      break;
+    case "error":
+      console.log("❌ " + [item.summary, item.description].filter(Boolean).join("\n"));
+      break;
+  }
 
-const form = document.getElementById("form");
-form.addEventListener("submit", async (event) => {
+  updateResult(item);
+};
+
+const form = document.getElementById("form") as HTMLFormElement;
+form?.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const formData = new FormData(form);
-  const values = Object.fromEntries(formData);
+  const values = Object.fromEntries(formData) as Record<string, string>;
 
   // clear output
-  document.getElementById("output").innerHTML = "";
+  output.innerHTML = "";
   elements.clear();
 
   const ctx = { server: values.server };
   const blob = await getExampleBlob();
 
-  await group(values.server, fullAudit(ctx, blob));
+  await audit(group(values.server, uploadDownloadAudit(ctx, blob)));
 });

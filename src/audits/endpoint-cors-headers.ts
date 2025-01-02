@@ -1,4 +1,4 @@
-import { fail, pass, warn } from "../audit";
+import { fail, pass, warn } from "../audit.js";
 import {
   BLOSSOM_CORS_DOCS,
   CORS_ALLOW_HEADERS,
@@ -8,7 +8,7 @@ import {
   CORS_EXPOSE_HEADERS,
   CORS_EXPOSE_HEADERS_DOCS,
   CORS_MAX_AGE,
-} from "../const";
+} from "../const.js";
 
 /** Check an endpoints CORS headers */
 export async function* endpointCorsHeadersAudit(ctx: { server: string }, endpoint: string) {
