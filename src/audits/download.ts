@@ -1,6 +1,6 @@
 import { fail, group, pass } from "../audit.js";
 import { getBlobSha256 } from "../helpers/blob.js";
-import { corsResponseHeadersAudit } from "./cors-response-headers.js";
+import { responseCorsHeadersAudit } from "./response-cors-headers.js";
 import { downloadCheckAudit } from "./download-check.js";
 import { endpointCorsHeadersAudit } from "./endpoint-cors-headers.js";
 
@@ -11,7 +11,7 @@ export async function* downloadAudit(ctx: { server: string }, hash: string) {
 
   const res = await fetch(new URL("/" + hash, ctx.server));
 
-  yield* group("CORS Headers", corsResponseHeadersAudit(ctx, res.headers));
+  yield* group("CORS Headers", responseCorsHeadersAudit(ctx, res.headers));
 
   const blob = await res.blob();
 

@@ -1,13 +1,13 @@
 import pfs from "fs/promises";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
+import mime from "mime";
 
 export async function readFileAsBlob(filePath: string) {
   // Read the file as a buffer
-  const buffer = await pfs.readFile(resolve(dirname(fileURLToPath(import.meta.url)), "../../", filePath));
+  const file = resolve(dirname(fileURLToPath(import.meta.url)), "../../", filePath);
+  const buffer = await pfs.readFile(file);
 
   // Convert buffer to Blob
-  const blob = new Blob([buffer], { type: "application/octet-stream" });
-
-  return blob;
+  return new Blob([buffer], { type: mime.getType(file) ?? undefined });
 }

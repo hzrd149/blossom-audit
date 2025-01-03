@@ -8,7 +8,8 @@ export const CORS_ALLOW_METHODS_DOCS =
 export const CORS_EXPOSE_HEADERS = "Access-Control-Expose-Headers";
 export const CORS_EXPOSE_HEADERS_DOCS =
   "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Expose-Headers";
-export const CORS_MAX_AGE = "Access-Control-Allow-Headers";
+export const CORS_MAX_AGE = "Access-Control-Max-Age";
+export const CORS_MAX_AGE_DOCS = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Max-Age";
 
 export const BLOSSOM_CORS_DOCS = "https://github.com/hzrd149/blossom/blob/master/buds/01.md#cross-origin-headers";
 

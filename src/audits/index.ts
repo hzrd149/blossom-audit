@@ -1,6 +1,6 @@
 export * from "./blob-descriptor-shape.js";
 export * from "./error-response.js";
-export * from "./cors-response-headers.js";
+export * from "./response-cors-headers.js";
 export * from "./endpoint-cors-headers.js";
 export * from "./upload.js";
 export * from "./upload-check.js";

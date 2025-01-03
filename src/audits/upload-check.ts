@@ -1,6 +1,6 @@
 import { group, info } from "../audit.js";
 import { getBlobSha256 } from "../helpers/blob.js";
-import { corsResponseHeadersAudit } from "./cors-response-headers.js";
+import { responseCorsHeadersAudit } from "./response-cors-headers.js";
 import { errorResponseAudit } from "./error-response.js";
 
 export async function* uploadCheckAudit(ctx: { server: string }, blob: Blob) {
@@ -24,19 +24,16 @@ export async function* uploadCheckAudit(ctx: { server: string }, blob: Blob) {
       see: "https://github.com/hzrd149/blossom/blob/master/buds/06.md",
     });
 
-    console.log("HEAD endpoint not supported, skipping checks");
-
     // exit
     return;
   }
 
   // audit CORS headers
-  yield* group("CORS Headers", corsResponseHeadersAudit(ctx, check.headers));
+  yield* group("CORS Headers", responseCorsHeadersAudit(ctx, check.headers));
 
-  if (check.ok) console.log("Upload check passed");
-  else {
-    console.log(`Check failed ${check.status}: ${check.headers.get("x-reason")}`);
-
+  if (!check.ok) {
     yield* group("Error Response", errorResponseAudit(ctx, check));
   }
+
+  return check;
 }

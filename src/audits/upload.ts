@@ -1,12 +1,16 @@
-import { fail, group, pass } from "../audit.js";
+import { fail, group, pass, Result } from "../audit.js";
 import { getBlobSha256 } from "../helpers/blob.js";
 import { blobDescriptorShapeAudit } from "./blob-descriptor-shape.js";
-import { corsResponseHeadersAudit } from "./cors-response-headers.js";
+import { responseCorsHeadersAudit } from "./response-cors-headers.js";
 import { endpointCorsHeadersAudit } from "./endpoint-cors-headers.js";
 import { errorResponseAudit } from "./error-response.js";
 import { uploadCheckAudit } from "./upload-check.js";
+import { BlobDescriptor } from "../types.js";
 
-export async function* uploadAudit(ctx: { server: string }, blob: Blob) {
+export async function* uploadAudit(
+  ctx: { server: string },
+  blob: Blob,
+): AsyncGenerator<Result, BlobDescriptor | undefined> {
   const endpoint = new URL("/upload", ctx.server);
 
   // check cors headers
@@ -16,16 +20,12 @@ export async function* uploadAudit(ctx: { server: string }, blob: Blob) {
   yield* group("Upload Check", uploadCheckAudit(ctx, blob));
 
   const sha256 = await getBlobSha256(blob);
-  console.log(`calculated hash ${sha256}`);
-
-  const upload = await fetch(endpoint, { method: "PUT", headers: { "x-sha256": sha256 } });
+  const upload = await fetch(endpoint, { method: "PUT", headers: { "x-sha256": sha256 }, body: blob });
 
   // audit CORS headers
-  yield* group("CORS Response Headers", corsResponseHeadersAudit(ctx, upload.headers));
+  yield* group("CORS Response Headers", responseCorsHeadersAudit(ctx, upload.headers));
 
   if (upload.ok) {
-    console.log("Upload success");
-
     // check headers
     if (!upload.headers.has("content-type")) yield fail("Response missing Content-Type header");
     else if (upload.headers.get("content-type")!.startsWith("application/json"))
@@ -47,8 +47,6 @@ export async function* uploadAudit(ctx: { server: string }, blob: Blob) {
       });
     }
   } else {
-    console.log(`Upload failed ${upload.status}: ${upload.headers.get("x-reason")}`);
-
     yield* group("Error Response", errorResponseAudit(ctx, upload));
   }
 }

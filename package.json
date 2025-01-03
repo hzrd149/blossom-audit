@@ -10,6 +10,7 @@
     "dev": "vite serve",
     "format": "prettier -w .",
     "postpack": "rm -f oclif.manifest.json",
+    "cli": "node bin/run.js",
     "prepack": "oclif manifest && oclif readme"
   },
   "bin": {
@@ -40,6 +41,7 @@
   "devDependencies": {
     "@changesets/cli": "^2.27.11",
     "@types/node": "^22.10.2",
+    "mime": "^4.0.6",
     "oclif": "^4.17.7",
     "prettier": "^3.4.2",
     "typescript": "~5.6.2",

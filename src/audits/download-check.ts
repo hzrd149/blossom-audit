@@ -1,5 +1,5 @@
 import { group } from "../audit.js";
-import { corsResponseHeadersAudit } from "./cors-response-headers.js";
+import { responseCorsHeadersAudit } from "./response-cors-headers.js";
 import { errorResponseAudit } from "./error-response.js";
 
 export async function* downloadCheckAudit(ctx: { server: string }, hash: string) {
@@ -10,7 +10,7 @@ export async function* downloadCheckAudit(ctx: { server: string }, hash: string)
   });
 
   // audit CORS headers
-  yield* group("CORS Headers", corsResponseHeadersAudit(ctx, check.headers));
+  yield* group("CORS Headers", responseCorsHeadersAudit(ctx, check.headers));
 
   if (!check.ok) yield* group("Error Response", errorResponseAudit(ctx, check));
 }

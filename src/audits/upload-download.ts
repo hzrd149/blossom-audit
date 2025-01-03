@@ -12,7 +12,7 @@ export async function* uploadDownloadAudit(ctx: { server: string }, blob: Blob) 
   if (upload) {
     yield pass({
       summary: "Uploaded blob",
-      description: ["sha256: " + upload.sha256, "size: " + upload.size, "type: " + upload.type].join("\n"),
+      description: JSON.stringify(upload, null, 2),
     });
   } else throw new Error("Upload failed");
 
