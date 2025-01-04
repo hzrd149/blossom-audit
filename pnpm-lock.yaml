@@ -29,6 +29,9 @@ importers:
       eventemitter3:
         specifier: ^5.0.1
         version: 5.0.1
+      mime:
+        specifier: ^4.0.6
+        version: 4.0.6
       terminal-link:
         specifier: ^3.0.0
         version: 3.0.0
@@ -39,9 +42,6 @@ importers:
       '@types/node':
         specifier: ^22.10.2
         version: 22.10.2
-      mime:
-        specifier: ^4.0.6
-        version: 4.0.6
       oclif:
         specifier: ^4.17.7
         version: 4.17.7(@types/node@22.10.2)

@@ -48,12 +48,12 @@
     "chalk": "^5.4.1",
     "chalk-template": "^1.1.0",
     "eventemitter3": "^5.0.1",
+    "mime": "^4.0.6",
     "terminal-link": "^3.0.0"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.11",
     "@types/node": "^22.10.2",
-    "mime": "^4.0.6",
     "oclif": "^4.17.7",
     "prettier": "^3.4.2",
     "typescript": "~5.6.2",
