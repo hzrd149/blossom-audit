@@ -20,7 +20,7 @@ export async function* uploadBlobAudit(
   yield* group("Upload Check", uploadCheckAudit(ctx, blob));
 
   const sha256 = await getBlobSha256(blob);
-  const upload = await fetch(endpoint, { method: "PUT", headers: { "x-sha256": sha256 }, body: blob });
+  const upload = await fetch(endpoint, { method: "PUT", headers: { "X-SHA-256": sha256 }, body: blob });
 
   // audit CORS headers
   yield* group("CORS Response Headers", responseCorsHeadersAudit(ctx, upload.headers));

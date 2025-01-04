@@ -10,9 +10,9 @@ export async function* mediaUploadCheckAudit(ctx: { server: string }, blob: Blob
   const check = await fetch(endpoint, {
     method: "HEAD",
     headers: {
-      "x-content-length": String(blob.size),
-      "x-content-type": blob.type,
-      "x-sha256": hash,
+      "X-Content-Length": String(blob.size),
+      "X-Content-Type": blob.type,
+      "X-SHA-256": hash,
     },
   });
 
