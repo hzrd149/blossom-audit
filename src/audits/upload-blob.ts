@@ -7,7 +7,7 @@ import { errorResponseAudit } from "./error-response.js";
 import { uploadCheckAudit } from "./upload-check.js";
 import { BlobDescriptor } from "../types.js";
 
-export async function* uploadAudit(
+export async function* uploadBlobAudit(
   ctx: { server: string },
   blob: Blob,
 ): AsyncGenerator<Result, BlobDescriptor | undefined> {
@@ -33,12 +33,38 @@ export async function* uploadAudit(
     else yield fail("Content-Type is not application/json");
 
     // parse response body
-    let result: any;
     try {
-      result = await upload.json();
+      const result = await upload.json();
 
       // check blob descriptor
-      return yield* group("Blob Descriptor", blobDescriptorShapeAudit(ctx, result));
+      const descriptor = yield* group("Blob Descriptor", blobDescriptorShapeAudit(ctx, result));
+
+      if (!descriptor) throw new Error("Failed to get blob descriptor");
+
+      if (descriptor.sha256 === sha256) yield pass("sha256 hash matches");
+      else
+        yield fail({
+          summary: "Returned hash does not match original blob",
+          description: `Original: ${sha256}\nReturned: ${descriptor.sha256}`,
+        });
+
+      if (descriptor.size === blob.size) yield pass("Returned size matches blob size");
+      else
+        yield fail({
+          summary: "Returned size does not match original blob size",
+          description: `Original: ${blob.size}]\nReturned: ${descriptor.size}`,
+        });
+
+      if (descriptor.type) {
+        if (descriptor.type === blob.type) yield pass(`Returned MIME type matches`);
+        else
+          yield fail({
+            summary: `Returned MIME type does not match original blob`,
+            description: `Original: ${blob.type}\nReturned: ${descriptor.type}`,
+          });
+      }
+
+      return descriptor;
     } catch (error) {
       yield fail({
         summary: "Response body is not valid JSON",

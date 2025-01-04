@@ -13,5 +13,6 @@ export const CORS_MAX_AGE_DOCS = "https://developer.mozilla.org/en-US/docs/Web/H
 
 export const BLOSSOM_CORS_DOCS = "https://github.com/hzrd149/blossom/blob/master/buds/01.md#cross-origin-headers";
 
+export const BLOSSOM_MEDIA_UPLOAD_DOCS = "https://github.com/hzrd149/blossom/blob/master/buds/05.md";
 export const BLOSSOM_NIP94_DOCS = "https://github.com/hzrd149/blossom/blob/master/buds/08.md";
 export const NIP94_DOCS = "https://github.com/nostr-protocol/nips/blob/master/94.md";

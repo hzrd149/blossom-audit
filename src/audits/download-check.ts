@@ -1,16 +1,18 @@
 import { group } from "../audit.js";
-import { responseCorsHeadersAudit } from "./response-cors-headers.js";
 import { errorResponseAudit } from "./error-response.js";
 
-export async function* downloadCheckAudit(ctx: { server: string }, hash: string) {
-  const endpoint = new URL("/" + hash, ctx.server);
+export async function* downloadCheckAudit(ctx: { server?: string }, url: string | URL) {
+  if (typeof url === "string") {
+    if (URL.canParse(url)) url = new URL(url);
+    else if (ctx.server) url = new URL(url, ctx.server);
+    else throw new Error("Missing server");
+  }
 
-  const check = await fetch(endpoint, {
+  const check = await fetch(url, {
     method: "HEAD",
   });
 
-  // audit CORS headers
-  yield* group("CORS Headers", responseCorsHeadersAudit(ctx, check.headers));
-
   if (!check.ok) yield* group("Error Response", errorResponseAudit(ctx, check));
+
+  return check;
 }

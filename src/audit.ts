@@ -21,12 +21,13 @@ export type Err = Base & { type: "error" };
 export type Result = Pass | Fail | Warn | Info | Err;
 export type ResultInit = Omit<Base, "parent" | "children">;
 
-export const hooks = {
-  onGroupStart: (_group: Result) => {},
-  onGroupEnd: (_group: Result) => {},
-  onGroup: (_group: Result) => {},
-  onResult: (_result: Result) => {},
+export type HookSet = {
+  onGroupStart?: (_group: Result) => void;
+  onGroupEnd?: (_group: Result) => void;
+  onGroup?: (_group: Result) => void;
+  onResult?: (_result: Result) => void;
 };
+export const hooks: HookSet[] = [];
 let stack: Result[] = [];
 
 // helpers to add items to context
@@ -45,7 +46,7 @@ export function item(
   if (!parent.children) parent.children = [];
   parent.children.push(item);
 
-  hooks.onResult(item);
+  for (const hook of hooks) hook.onResult?.(item);
 
   return item;
 }
@@ -83,9 +84,9 @@ export async function* group<T>(
   }
   stack.push(group);
 
-  hooks.onGroup(group);
+  for (const hook of hooks) hook.onGroup?.(group);
 
-  hooks.onGroupStart(group);
+  for (const hook of hooks) hook.onGroupStart?.(group);
 
   let result: IteratorResult<Result, T>;
   try {
@@ -98,7 +99,7 @@ export async function* group<T>(
           children.push(item);
           item.parent = group;
 
-          hooks.onResult(item);
+          for (const hook of hooks) hook.onResult?.(item);
         }
       }
     }
@@ -117,7 +118,7 @@ export async function* group<T>(
     }
 
     stack.pop();
-    hooks.onGroupEnd(group);
+    for (const hook of hooks) hook.onGroupEnd?.(group);
 
     yield group;
 
@@ -127,13 +128,13 @@ export async function* group<T>(
     if (error instanceof Error) {
       const item: Err = { type: "error", summary: error.message, description: error.stack, parent: group };
       children.push(item);
-      hooks.onResult(item);
+      for (const hook of hooks) hook.onResult?.(item);
 
       group.type = "fail";
     }
 
     stack.pop();
-    hooks.onGroupEnd(group);
+    for (const hook of hooks) hook.onGroupEnd?.(group);
 
     yield group;
 

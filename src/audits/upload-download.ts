@@ -1,13 +1,13 @@
 import { fail, group, pass } from "../audit.js";
 import { getBlobSha256 } from "../helpers/blob.js";
-import { downloadAudit } from "./download.js";
-import { uploadAudit } from "./upload.js";
+import { downloadBlobAudit } from "./download-blob.js";
+import { uploadBlobAudit } from "./upload-blob.js";
 
 export async function* uploadDownloadAudit(ctx: { server: string }, blob: Blob) {
   const hash = await getBlobSha256(blob);
 
   // TODO: need to ensure upload is successful for test to continue
-  const upload = yield* group("Upload", uploadAudit(ctx, blob));
+  const upload = yield* group("Upload", uploadBlobAudit(ctx, blob));
 
   if (upload) {
     yield pass({
@@ -16,7 +16,7 @@ export async function* uploadDownloadAudit(ctx: { server: string }, blob: Blob) 
     });
   } else throw new Error("Upload failed");
 
-  const downloaded = yield* group("Download", downloadAudit(ctx, hash));
+  const downloaded = yield* group("Download", downloadBlobAudit(ctx, new URL(hash, ctx.server)));
 
   if (downloaded) {
     const downloadedHash = await getBlobSha256(downloaded);

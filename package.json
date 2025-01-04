@@ -22,6 +22,18 @@
     "oclif.manifest.json",
     "assets"
   ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./loggers/*": {
+      "import": "./dist/loggers/*.js",
+      "require": "./dist/loggers/*.js",
+      "types": "./dist/loggers/*.d.ts"
+    }
+  },
   "bugs": "https://github.com/hzrd149/blossom-audit/issues",
   "homepage": "https://github.com/hzrd149/blossom-audit",
   "repository": {

@@ -1,4 +1,5 @@
 import { audit, uploadDownloadAudit, group, hooks } from "../src/index";
+import { BrowserLogger } from "../src/loggers/browser";
 import "./style.css";
 
 async function getExampleBlob() {
@@ -64,35 +65,12 @@ function updateResult(result) {
   if (result.parent) updateResult(result.parent);
 }
 
-hooks.onGroup = updateResult;
-hooks.onGroupStart = (group) => {
-  console.group(group.summary);
-};
-hooks.onGroupEnd = (group) => {
-  console.groupEnd();
-  updateResult(group);
-};
-hooks.onResult = (item) => {
-  switch (item.type) {
-    case "pass":
-      console.log("✅ " + [item.summary, item.description, item.see].filter(Boolean).join("\n"));
-      break;
-    case "fail":
-      console.log("❌ " + [item.summary, item.description, item.see].filter(Boolean).join("\n"));
-      break;
-    case "warn":
-      console.log("🟠 " + [item.summary, item.description, item.see].filter(Boolean).join("\n"));
-      break;
-    case "info":
-      console.log("🔵 " + [item.summary, item.description, item.see].filter(Boolean).join("\n"));
-      break;
-    case "error":
-      console.log("❌ " + [item.summary, item.description].filter(Boolean).join("\n"));
-      break;
-  }
-
-  updateResult(item);
-};
+hooks.push(BrowserLogger);
+hooks.push({
+  onGroup: updateResult,
+  onGroupEnd: updateResult,
+  onResult: updateResult,
+});
 
 const form = document.getElementById("form") as HTMLFormElement;
 form?.addEventListener("submit", async (event) => {

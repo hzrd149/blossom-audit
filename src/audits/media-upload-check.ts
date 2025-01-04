@@ -2,11 +2,11 @@ import { group, info, pass } from "../audit.js";
 import { getBlobSha256 } from "../helpers/blob.js";
 import { errorResponseAudit } from "./error-response.js";
 
-export async function* uploadCheckAudit(ctx: { server: string }, blob: Blob) {
-  const endpoint = new URL("/upload", ctx.server);
+export async function* mediaUploadCheckAudit(ctx: { server: string }, blob: Blob) {
+  const endpoint = new URL("/media", ctx.server);
   const hash = await getBlobSha256(blob);
 
-  // BUD-06 check
+  // BUD-05 check
   const check = await fetch(endpoint, {
     method: "HEAD",
     headers: {
@@ -19,19 +19,17 @@ export async function* uploadCheckAudit(ctx: { server: string }, blob: Blob) {
   // check if supported
   if (check.status === 404) {
     yield info({
-      summary: "BUD-06 upload check is not supported",
-      see: "https://github.com/hzrd149/blossom/blob/master/buds/06.md",
+      summary: "BUD-05 media uploads not supported",
+      see: "https://github.com/hzrd149/blossom/blob/master/buds/05.md",
     });
 
     // exit
     return;
   }
 
-  yield pass("BUD-06 upload check supported");
-
   if (!check.ok) {
     yield* group("Error Response", errorResponseAudit(ctx, check));
-  }
+  } else yield pass(`Media upload check`);
 
   return check;
 }

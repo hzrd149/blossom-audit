@@ -10,8 +10,14 @@ import {
 } from "../const.js";
 
 /** Check an endpoints CORS headers */
-export async function* endpointCorsHeadersAudit(ctx: { server: string }, endpoint: string) {
-  const res = await fetch(new URL(endpoint, ctx.server), { method: "OPTIONS" });
+export async function* endpointCorsHeadersAudit(ctx: { server?: string }, url: string | URL) {
+  if (typeof url === "string") {
+    if (URL.canParse(url)) url = new URL(url);
+    else if (ctx.server) url = new URL(url, ctx.server);
+    else throw new Error("Missing server");
+  }
+
+  const res = await fetch(url, { method: "OPTIONS" });
   const headers = res.headers;
 
   // check CORS allow origin
