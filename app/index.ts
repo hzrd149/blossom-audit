@@ -1,4 +1,4 @@
-import { audit, uploadDownloadAudit, group, hooks } from "../src/index";
+import { audit, fullAudit, group, hooks } from "../src/index";
 import { BrowserLogger } from "../src/loggers/browser";
 import "./style.css";
 
@@ -86,5 +86,5 @@ form?.addEventListener("submit", async (event) => {
   const ctx = { server: values.server };
   const blob = await getExampleBlob();
 
-  await audit(group(values.server, uploadDownloadAudit(ctx, blob)));
+  await audit(group(values.server, fullAudit(ctx, blob)));
 });
