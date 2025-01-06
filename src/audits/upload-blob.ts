@@ -6,6 +6,7 @@ import { endpointCorsHeadersAudit } from "./endpoint-cors-headers.js";
 import { errorResponseAudit } from "./error-response.js";
 import { uploadCheckAudit } from "./upload-check.js";
 import { BlobDescriptor } from "../types.js";
+import { fetchWithLogs } from "../helpers/debug.js";
 
 export async function* uploadBlobAudit(
   ctx: { server: string },
@@ -17,10 +18,13 @@ export async function* uploadBlobAudit(
   yield* group("Check CORS", endpointCorsHeadersAudit(ctx, "/upload"));
 
   // BUD-06 check
-  yield* group("Upload Check", uploadCheckAudit(ctx, blob));
+  const check = yield* group("Upload Check", uploadCheckAudit(ctx, blob));
+
+  // don't continue the upload if the check failed
+  if (check && !check.ok && check.status !== 404) throw new Error("Upload check failed");
 
   const sha256 = await getBlobSha256(blob);
-  const upload = await fetch(endpoint, { method: "PUT", headers: { "X-SHA-256": sha256 }, body: blob });
+  const upload = await fetchWithLogs(endpoint, { method: "PUT", headers: { "X-SHA-256": sha256 }, body: blob });
 
   // audit CORS headers
   yield* group("CORS Response Headers", responseCorsHeadersAudit(ctx, upload.headers));

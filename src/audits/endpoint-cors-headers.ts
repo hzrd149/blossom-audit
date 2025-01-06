@@ -8,6 +8,7 @@ import {
   CORS_MAX_AGE,
   CORS_MAX_AGE_DOCS,
 } from "../const.js";
+import { fetchWithLogs } from "../helpers/debug.js";
 
 /** Check an endpoints CORS headers */
 export async function* endpointCorsHeadersAudit(ctx: { server?: string }, url: string | URL) {
@@ -17,7 +18,7 @@ export async function* endpointCorsHeadersAudit(ctx: { server?: string }, url: s
     else throw new Error("Missing server");
   }
 
-  const res = await fetch(url, { method: "OPTIONS" });
+  const res = await fetchWithLogs(url, { method: "OPTIONS" });
   const headers = res.headers;
 
   // check CORS allow origin

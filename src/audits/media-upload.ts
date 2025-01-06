@@ -1,6 +1,7 @@
 import { fail, group, pass, warn } from "../audit.js";
 import { BLOSSOM_MEDIA_UPLOAD_DOCS } from "../const.js";
 import { getBlobSha256 } from "../helpers/blob.js";
+import { fetchWithLogs } from "../helpers/debug.js";
 import { blobDescriptorShapeAudit } from "./blob-descriptor-shape.js";
 import { errorResponseAudit } from "./error-response.js";
 import { mediaUploadCheckAudit } from "./media-upload-check.js";
@@ -13,7 +14,7 @@ export async function* mediaUploadAudit(ctx: { server: string }, blob: Blob) {
   if (!check || check?.status === 404) throw new Error("BUD-05 /media endpoint is not supported");
 
   const sha256 = await getBlobSha256(blob);
-  const upload = await fetch(endpoint, { body: blob, method: "PUT", headers: { "X-SHA-256": sha256 } });
+  const upload = await fetchWithLogs(endpoint, { body: blob, method: "PUT", headers: { "X-SHA-256": sha256 } });
 
   // audit CORS headers
   yield* group("CORS Response Headers", responseCorsHeadersAudit(ctx, upload.headers));

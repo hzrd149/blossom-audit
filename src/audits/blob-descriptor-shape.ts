@@ -1,8 +1,11 @@
 import { fail, info, pass, warn } from "../audit.js";
 import { BLOSSOM_NIP94_DOCS, NIP94_DOCS } from "../const.js";
+import { verbose } from "../helpers/debug.js";
 import { BlobDescriptor } from "../types.js";
 
 export async function* blobDescriptorShapeAudit(_ctx: any, blob: Record<string, any>) {
+  verbose("Checking if", blob, "is a valid blob descriptor");
+
   // check url
   if (Reflect.has(blob, "url")) {
     // has url

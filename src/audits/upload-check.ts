@@ -1,5 +1,6 @@
 import { group, info, pass } from "../audit.js";
 import { getBlobSha256 } from "../helpers/blob.js";
+import { fetchWithLogs } from "../helpers/debug.js";
 import { errorResponseAudit } from "./error-response.js";
 
 export async function* uploadCheckAudit(ctx: { server: string }, blob: Blob) {
@@ -7,7 +8,7 @@ export async function* uploadCheckAudit(ctx: { server: string }, blob: Blob) {
   const hash = await getBlobSha256(blob);
 
   // BUD-06 check
-  const check = await fetch(endpoint, {
+  const check = await fetchWithLogs(endpoint, {
     method: "HEAD",
     headers: {
       "X-Content-Length": String(blob.size),

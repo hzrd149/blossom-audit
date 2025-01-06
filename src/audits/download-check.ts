@@ -1,4 +1,5 @@
 import { group } from "../audit.js";
+import { fetchWithLogs } from "../helpers/debug.js";
 import { errorResponseAudit } from "./error-response.js";
 
 export async function* downloadCheckAudit(ctx: { server?: string }, url: string | URL) {
@@ -8,7 +9,7 @@ export async function* downloadCheckAudit(ctx: { server?: string }, url: string 
     else throw new Error("Missing server");
   }
 
-  const check = await fetch(url, {
+  const check = await fetchWithLogs(url, {
     method: "HEAD",
   });
 

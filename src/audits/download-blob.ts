@@ -4,6 +4,7 @@ import { responseCorsHeadersAudit } from "./response-cors-headers.js";
 import { downloadCheckAudit } from "./download-check.js";
 import { endpointCorsHeadersAudit } from "./endpoint-cors-headers.js";
 import { getHashFromURL } from "../helpers/url.js";
+import { fetchWithLogs, verbose } from "../helpers/debug.js";
 
 export async function* downloadBlobAudit(ctx: { server?: string }, url: string | URL) {
   if (typeof url === "string") {
@@ -13,12 +14,13 @@ export async function* downloadBlobAudit(ctx: { server?: string }, url: string |
   }
 
   const hash = getHashFromURL(url, true);
+  verbose("Found", hash, "in URL");
 
   yield* group("Check CORS", endpointCorsHeadersAudit(ctx, url));
 
   yield* group("Check Download", downloadCheckAudit(ctx, url));
 
-  const res = await fetch(url);
+  const res = await fetchWithLogs(url);
 
   yield* group("CORS Headers", responseCorsHeadersAudit(ctx, res.headers));
 
