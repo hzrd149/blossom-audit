@@ -40,6 +40,9 @@
     "type": "git",
     "url": "https://github.com/hzrd149/blossom-audit.git"
   },
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@noble/hashes": "^1.6.1",
     "@oclif/core": "^4.2.0",
