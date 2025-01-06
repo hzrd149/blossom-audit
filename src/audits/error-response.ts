@@ -1,4 +1,5 @@
 import { fail, pass } from "../audit.js";
+import { verbose } from "../helpers/debug.js";
 
 export async function* errorResponseAudit(_ctx: any, res: Response) {
   if (res.headers.has("x-reason"))
@@ -9,4 +10,8 @@ export async function* errorResponseAudit(_ctx: any, res: Response) {
       description: `The X-Reason header is used to provide a human readable error message for the user\nX-Reason: ${res.headers.get("x-reason")}`,
       see: "https://github.com/hzrd149/blossom/blob/master/buds/01.md#error-responses",
     });
+
+  if (!res.bodyUsed) {
+    verbose("Response body", await res.text());
+  }
 }

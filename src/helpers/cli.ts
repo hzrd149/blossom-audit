@@ -2,6 +2,7 @@ import pfs from "fs/promises";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 import mime from "mime";
+import { nip19 } from "nostr-tools";
 
 export async function readFileAsBlob(file: string) {
   const buffer = await pfs.readFile(file);
@@ -45,5 +46,19 @@ export async function loadExampleFile(file: string) {
       );
     default:
       return await readFileAsBlob(file);
+  }
+}
+
+export function normalizeToHexPubkey(hex: string) {
+  if (hex.match(/[0-9a-f]{64}/i)) return hex;
+  const result = nip19.decode(hex);
+  switch (result.type) {
+    case "naddr":
+    case "nprofile":
+      return result.data.pubkey;
+    case "npub":
+      return result.data;
+    default:
+      throw new Error(`Cant find pubkey in ${result.type}`);
   }
 }
