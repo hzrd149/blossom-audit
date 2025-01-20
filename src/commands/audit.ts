@@ -2,13 +2,18 @@ import { Args, Command } from "@oclif/core";
 
 import { audit, group, hooks } from "../audit.js";
 import { NodeLogger } from "../loggers/node.js";
-import { loadExampleFile } from "../helpers/cli.js";
+import { getAuthSigner, loadExampleFile } from "../helpers/cli.js";
 import { fullAudit } from "../audits/full-audit.js";
-import { globalFlags } from "../cli/flags.js";
+import { connectFlag, globalFlags, secretKeyFlag } from "../cli/flags.js";
 import { debug } from "../helpers/debug.js";
 
 export default class Audit extends Command {
-  static flags = { ...globalFlags };
+  static flags = {
+    ...globalFlags,
+    sec: secretKeyFlag,
+    connect: connectFlag,
+  };
+
   static args = {
     server: Args.string({ description: "The URL of the blossom server", required: true }),
     file: Args.string({
@@ -23,10 +28,11 @@ export default class Audit extends Command {
     const { args, flags } = await this.parse(Audit);
     debug.enabled = flags.verbose;
 
+    const signer = await getAuthSigner(flags);
     const server = new URL("/", args.server).toString();
     const file = await loadExampleFile(args.file);
 
     hooks.push(NodeLogger);
-    await audit(group(`Full Audit ${server}`, fullAudit({ server }, file)));
+    await audit(group(`Full Audit ${server}`, fullAudit({ server, signer }, file)));
   }
 }

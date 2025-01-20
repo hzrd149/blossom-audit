@@ -1,9 +1,10 @@
 import { group, info } from "../audit.js";
 import { getBlobSha256 } from "../helpers/blob.js";
+import { SingerContext } from "./context.js";
 import { downloadBlobAudit } from "./download-blob.js";
 import { uploadBlobAudit } from "./upload-blob.js";
 
-export async function* fullAudit(ctx: { server: string }, blob: Blob) {
+export async function* fullAudit(ctx: { server: string } & SingerContext, blob: Blob) {
   // TODO: need to ensure upload is successful for test to continue
   const upload = yield* group("Upload", uploadBlobAudit(ctx, blob));
 

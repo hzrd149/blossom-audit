@@ -1,3 +1,5 @@
+export const AUTH_EVENT_KIND = 24242;
+
 export const CORS_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
 export const CORS_ALLOW_HEADERS = "Access-Control-Allow-Headers";
 export const CORS_ALLOW_HEADERS_DOCS =

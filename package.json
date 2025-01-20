@@ -48,6 +48,7 @@
     "@oclif/core": "^4.2.0",
     "@oclif/plugin-help": "^6",
     "@oclif/plugin-plugins": "^5",
+    "applesauce-signer": "0.0.0-next-20250120191411",
     "chalk": "^5.4.1",
     "chalk-template": "^1.1.0",
     "eventemitter3": "^5.0.1",

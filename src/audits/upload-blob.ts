@@ -1,4 +1,4 @@
-import { fail, group, pass, Result } from "../audit.js";
+import { fail, group, info, pass, Result, warn } from "../audit.js";
 import { getBlobSha256 } from "../helpers/blob.js";
 import { blobDescriptorShapeAudit } from "./blob-descriptor-shape.js";
 import { responseCorsHeadersAudit } from "./response-cors-headers.js";
@@ -6,14 +6,81 @@ import { endpointCorsHeadersAudit } from "./endpoint-cors-headers.js";
 import { errorResponseAudit } from "./error-response.js";
 import { uploadCheckAudit } from "./upload-check.js";
 import { BlobDescriptor } from "../types.js";
-import { fetchWithLogs } from "../helpers/debug.js";
+import { fetchWithLogs, verbose } from "../helpers/debug.js";
+import { SingerContext } from "./context.js";
+import { AUTH_EVENT_KIND } from "../const.js";
+import { oneHour, unixNow } from "../helpers/date.js";
+import { encodeAuthorizationHeader } from "../helpers/auth.js";
+import { authenticationResponseAudit } from "./authentication-response.js";
 
-export async function* uploadBlobAudit(
-  ctx: { server: string },
+export async function* uploadRequest(
+  ctx: { server: string } & SingerContext,
   blob: Blob,
-): AsyncGenerator<Result, BlobDescriptor | undefined> {
+  useAuth?: boolean,
+): AsyncGenerator<Result, Response | undefined> {
   const endpoint = new URL("/upload", ctx.server);
 
+  const sha256 = await getBlobSha256(blob);
+
+  let upload: Response;
+  if (useAuth) {
+    if (!ctx.signer) throw new Error("Missing signer");
+
+    verbose(`Creating upload authorization event`);
+
+    const auth = await ctx.signer.signEvent({
+      kind: AUTH_EVENT_KIND,
+      tags: [
+        ["t", "upload"],
+        ["x", sha256],
+        ["expiration", String(oneHour())],
+      ],
+      content: "upload audit",
+      created_at: unixNow(),
+    });
+
+    upload = await fetchWithLogs(endpoint, {
+      method: "PUT",
+      headers: { "X-SHA-256": sha256, Authorization: encodeAuthorizationHeader(auth) },
+      body: blob,
+    });
+
+    if (upload.status === 401)
+      throw new Error(`Returned ${upload.status} (${upload.statusText}) even though Authorization header was provided`);
+  } else {
+    upload = await fetchWithLogs(endpoint, { method: "PUT", headers: { "X-SHA-256": sha256 }, body: blob });
+  }
+
+  // audit CORS headers
+  yield* group("CORS Response Headers", responseCorsHeadersAudit(ctx, upload.headers));
+
+  // auth error headers
+  if (!upload.ok) {
+    yield* group("Error Response", errorResponseAudit(ctx, upload));
+  }
+
+  // 401 auth required
+  if (upload.status === 401) {
+    yield* authenticationResponseAudit(ctx, upload);
+
+    if (ctx.signer) {
+      yield info(`Got ${upload.status} (${upload.statusText}) retrying with auth`);
+
+      return yield* uploadRequest(ctx, blob, true);
+    } else {
+      yield warn(`Got ${upload.status} (${upload.statusText}) but missing signer`);
+
+      return undefined;
+    }
+  }
+
+  return upload;
+}
+
+export async function* uploadBlobAudit(
+  ctx: { server: string } & SingerContext,
+  blob: Blob,
+): AsyncGenerator<Result, BlobDescriptor | undefined> {
   // check cors headers
   yield* group("Check CORS", endpointCorsHeadersAudit(ctx, "/upload"));
 
@@ -21,28 +88,25 @@ export async function* uploadBlobAudit(
   const check = yield* group("Upload Check", uploadCheckAudit(ctx, blob));
 
   // don't continue the upload if the check failed
-  if (check && !check.ok && check.status !== 404) throw new Error("Upload check failed");
+  if (check && check.pass === false) throw new Error("Upload check failed");
 
   const sha256 = await getBlobSha256(blob);
-  const upload = await fetchWithLogs(endpoint, { method: "PUT", headers: { "X-SHA-256": sha256 }, body: blob });
 
-  // audit CORS headers
-  yield* group("CORS Response Headers", responseCorsHeadersAudit(ctx, upload.headers));
+  const response = yield* uploadRequest(ctx, blob, check?.auth);
+  if (!response) throw new Error("Failed to get upload response");
 
-  if (upload.ok) {
+  if (response.ok) {
     // check headers
-    if (!upload.headers.has("content-type")) yield fail("Response missing Content-Type header");
-    else if (upload.headers.get("content-type")!.startsWith("application/json"))
+    if (!response.headers.has("content-type")) yield fail("Response missing Content-Type header");
+    else if (response.headers.get("content-type")!.startsWith("application/json"))
       yield pass("Content-Type is application/json");
     else yield fail("Content-Type is not application/json");
 
-    // parse response body
     try {
-      const result = await upload.json();
+      // parse response body
+      const json = (await response.json()) as Record<string, any>;
 
-      // check blob descriptor
-      const descriptor = yield* group("Blob Descriptor", blobDescriptorShapeAudit(ctx, result));
-
+      const descriptor = yield* group("Blob Descriptor", blobDescriptorShapeAudit(ctx, json));
       if (!descriptor) throw new Error("Failed to get blob descriptor");
 
       if (descriptor.sha256 === sha256) yield pass("sha256 hash matches");
@@ -76,7 +140,5 @@ export async function* uploadBlobAudit(
         see: "https://github.com/hzrd149/blossom/blob/master/buds/02.md#put-upload---upload-blob",
       });
     }
-  } else {
-    yield* group("Error Response", errorResponseAudit(ctx, upload));
   }
 }
