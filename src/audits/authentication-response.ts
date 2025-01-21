@@ -1,10 +1,10 @@
-import { err, pass, warn } from "../audit.js";
+import { fail, pass, warn } from "../audit.js";
 
 /** Checks a 401 response */
 export async function* authenticationResponseAudit(_ctx: any, response: Response) {
   if (response.headers.has("WWW-Authenticate")) {
     if (response.headers.get("WWW-Authenticate") === "Bearer") yield pass(`WWW-Authenticate is set to "Bearer"`);
-    else yield err(`WWW-Authenticate must be set to "Bearer"`);
+    else yield fail(`WWW-Authenticate must be set to "Bearer"`);
   } else
     yield warn({
       summary: "Missing WWW-Authenticate header",

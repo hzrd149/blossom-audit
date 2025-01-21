@@ -79,6 +79,7 @@ export function getSecretKeyHex(value: string) {
 
 function createConnectMethods(): NostrConnectConnectionMethods {
   let sub: SubCloser | undefined = undefined;
+  let cleanup: string[] = [];
 
   return {
     onPublishEvent: async (event, relays) => {
@@ -86,9 +87,11 @@ function createConnectMethods(): NostrConnectConnectionMethods {
     },
     onSubOpen: async (filters, relays, onevent) => {
       sub = pool.subscribeMany(relays, filters, { onevent });
+      cleanup = relays;
     },
     onSubClose: async () => {
       sub?.close();
+      pool.close(cleanup);
     },
   };
 }
@@ -103,5 +106,11 @@ export async function getAuthSigner(flags: { sec?: string; connect?: string }) {
   } else if (flags.sec) {
     const key = getSecretKeyHex(flags.sec);
     return new SimpleSigner(key);
+  }
+}
+
+export async function disconnectSigner(signer: any) {
+  if (signer instanceof NostrConnectSigner) {
+    await signer.close();
   }
 }

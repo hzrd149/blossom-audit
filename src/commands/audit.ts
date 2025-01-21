@@ -2,7 +2,7 @@ import { Args, Command } from "@oclif/core";
 
 import { audit, group, hooks } from "../audit.js";
 import { NodeLogger } from "../loggers/node.js";
-import { getAuthSigner, loadExampleFile } from "../helpers/cli.js";
+import { disconnectSigner, getAuthSigner, loadExampleFile } from "../helpers/cli.js";
 import { fullAudit } from "../audits/full-audit.js";
 import { connectFlag, globalFlags, secretKeyFlag } from "../cli/flags.js";
 import { debug } from "../helpers/debug.js";
@@ -34,5 +34,7 @@ export default class Audit extends Command {
 
     hooks.push(NodeLogger);
     await audit(group(`Full Audit ${server}`, fullAudit({ server, signer }, file)));
+
+    await disconnectSigner(signer);
   }
 }

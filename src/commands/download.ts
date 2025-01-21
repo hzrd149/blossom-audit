@@ -23,6 +23,6 @@ export default class Download extends Command {
     const url = new URL(args.server).toString();
 
     hooks.push(NodeLogger);
-    await audit(group(`Download ${args.hash}`, downloadBlobAudit({ server }, args.hash || url)));
+    await audit(group(`Download audit`, downloadBlobAudit({ server }, args.hash || url)));
   }
 }

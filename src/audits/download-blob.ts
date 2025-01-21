@@ -14,7 +14,7 @@ export async function* downloadBlobAudit(ctx: { server?: string }, url: string |
   }
 
   const hash = getHashFromURL(url, true);
-  verbose("Found", hash, "in URL");
+  verbose(`Found ${hash} in ${url.toString()}`);
 
   yield* group("Check CORS", endpointCorsHeadersAudit(ctx, url));
 

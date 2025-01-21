@@ -1,4 +1,4 @@
-import { group } from "../audit.js";
+import { group, info } from "../audit.js";
 import { fetchWithLogs } from "../helpers/debug.js";
 import { errorResponseAudit } from "./error-response.js";
 
@@ -9,11 +9,16 @@ export async function* downloadCheckAudit(ctx: { server?: string }, url: string 
     else throw new Error("Missing server");
   }
 
-  const check = await fetchWithLogs(url, {
+  let response = await fetchWithLogs(url, {
     method: "HEAD",
   });
 
-  if (!check.ok) yield* group("Error Response", errorResponseAudit(ctx, check));
+  if (!response.ok) yield* group("Error Response", errorResponseAudit(ctx, response));
 
-  return check;
+  yield info({
+    summary: response.ok ? "Server has blob" : "Server does not have blob",
+    description: `Got ${response.status} (${response.statusText})`,
+  });
+
+  return response;
 }

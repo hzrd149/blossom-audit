@@ -1,4 +1,4 @@
-import { fail, info, pass, warn } from "../audit.js";
+import { err, fail, info, pass, warn } from "../audit.js";
 import { BLOSSOM_NIP94_DOCS, NIP94_DOCS } from "../const.js";
 import { verbose } from "../helpers/debug.js";
 import { BlobDescriptor } from "../types.js";
@@ -49,38 +49,59 @@ export async function* blobDescriptorShapeAudit(_ctx: any, blob: Record<string, 
   if (Reflect.has(blob, "created_at")) {
     yield warn({
       summary: `Has legacy "created_at" field`,
-      description: `The created_at field should be renamed to uploaded`,
+      description: `The "created_at" field should be renamed to "uploaded"`,
+    });
+  }
+  if (Reflect.has(blob, "created")) {
+    yield warn({
+      summary: `Has legacy "created" field`,
+      description: `The "created" field should be renamed to "uploaded"`,
     });
   }
 
   if (Reflect.has(blob, "nip94")) {
     yield pass({ summary: `Has "nip94" metadata tags` });
 
+    // make sure all values are strings
+    let nonStringFields = Object.entries(blob.nip94)
+      .filter(([key, value]) => typeof value !== "string")
+      .map(([key]) => key);
+    if (nonStringFields.length > 0) {
+      yield fail({
+        summary: "All nip94 values must be strings",
+        description: `Fields: ${nonStringFields.join(", ")}`,
+        see: "https://github.com/hzrd149/blossom/blob/master/buds/08.md",
+      });
+    }
+
     // required "url" tag
     if (Reflect.has(blob.nip94, "url")) {
-      yield pass('Has NIP-94 "url" tag');
-      if (blob.url && blob.nip94.url !== blob.url) yield warn(`NIP-94 "url" tag does not match blobs "url"`);
+      yield pass({ summary: 'Has NIP-94 "url" tag', description: blob.nip94.url });
+      if (blob.url && blob.nip94.url !== blob.url) yield fail(`NIP-94 "url" tag does not match blobs "url"`);
     } else yield fail({ summary: `'NIP-94 requires a "url" tag`, see: NIP94_DOCS });
 
     // required "m" tag
     if (Reflect.has(blob.nip94, "m")) {
-      yield pass('Has NIP-94 "m" tag');
-      if (blob.type && blob.nip94.m !== blob.type) yield warn(`NIP-94 "m" tag does not match blobs "type"`);
+      yield pass({ summary: 'Has NIP-94 "m" tag', description: blob.nip94.m });
+      if (blob.type && blob.nip94.m !== blob.type) yield fail(`NIP-94 "m" tag does not match blobs "type"`);
     } else yield fail({ summary: `'NIP-94 requires a "m" tag`, see: NIP94_DOCS });
 
     // required "x" tag
     if (Reflect.has(blob.nip94, "x")) {
-      yield pass('Has NIP-94 "x" tag');
+      yield pass({ summary: 'Has NIP-94 "x" tag', description: blob.nip94.x });
       if (blob.sha256 && blob.nip94.x !== blob.sha256) yield fail(`NIP-94 "x" tag does not match blobs "sha256"`);
     } else yield fail({ summary: `'NIP-94 requires a "x" tag`, see: NIP94_DOCS });
 
-    // check size is equal
-    if (blob.size && Reflect.has(blob.nip94, "size") && parseInt(blob.nip94.size) !== blob.size) {
-      yield warn(`NIP-94 "size" tag does not match blobs "size"`);
+    if (Reflect.has(blob.nip94, "size") && typeof blob.nip94.size === "string") {
+      yield pass('Has NIP-94 "size" tag');
+
+      // check size is equal
+      if (parseInt(blob.nip94.size) !== blob.size) yield fail(`NIP-94 "size" tag does not match blobs "size"`);
+      else yield pass('NIP-94 "size" matches blob "size"');
     }
 
     // log any additional tags
-    const requiredNip94Tags = ["x", "m", "url"];
+    const requiredNip94Tags = ["x", "m", "url", "size"];
     for (const [name, value] of Object.entries(blob.nip94)) {
       if (!requiredNip94Tags.includes(name)) {
         yield info({
@@ -97,7 +118,7 @@ export async function* blobDescriptorShapeAudit(_ctx: any, blob: Record<string, 
     });
 
   // check for any unknown fields
-  const knownFields = ["url", "size", "sha256", "type", "uploaded", "nip94"];
+  const knownFields = ["url", "size", "sha256", "type", "uploaded", "nip94", "created", "created_at"];
   for (const field of Reflect.ownKeys(blob)) {
     if (typeof field === "string" && !knownFields.includes(field)) {
       const value = Reflect.get(blob, field);

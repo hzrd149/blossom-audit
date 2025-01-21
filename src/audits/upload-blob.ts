@@ -19,7 +19,6 @@ export async function* uploadRequest(
   useAuth?: boolean,
 ): AsyncGenerator<Result, Response | undefined> {
   const endpoint = new URL("/upload", ctx.server);
-
   const sha256 = await getBlobSha256(blob);
 
   let upload: Response;
@@ -54,7 +53,7 @@ export async function* uploadRequest(
   // audit CORS headers
   yield* group("CORS Response Headers", responseCorsHeadersAudit(ctx, upload.headers));
 
-  // auth error headers
+  // check error response
   if (!upload.ok) {
     yield* group("Error Response", errorResponseAudit(ctx, upload));
   }
