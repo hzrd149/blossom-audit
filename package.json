@@ -11,7 +11,8 @@
     "format": "prettier -w .",
     "postpack": "rm -f oclif.manifest.json",
     "cli": "node bin/run.js",
-    "prepack": "oclif manifest && oclif readme"
+    "prepack": "oclif manifest && oclif readme",
+    "docs": "oclif manifest && oclif readme --multi"
   },
   "bin": {
     "blossom-audit": "./bin/run.js"

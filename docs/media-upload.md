@@ -11,7 +11,7 @@ Audit uploading a media file to the /media endpoint of a server
 
 ```
 USAGE
-  $ blossom-audit media-upload SERVER FILE [-v]
+  $ blossom-audit media-upload SERVER FILE [-v] [--sec <value>] [--connect <value>]
 
 ARGUMENTS
   SERVER  The URL of the server to upload to
@@ -19,7 +19,9 @@ ARGUMENTS
           example file
 
 FLAGS
-  -v, --verbose  Enable verbose logging
+  -v, --verbose          Enable verbose logging
+      --connect=<value>  A NIP-46 bunker URI that will be used to sign authorization events
+      --sec=<value>      A private key that will be used to sign authorization events
 
 DESCRIPTION
   Audit uploading a media file to the /media endpoint of a server

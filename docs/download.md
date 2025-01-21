@@ -11,14 +11,16 @@ Audit downloading a blob from a server
 
 ```
 USAGE
-  $ blossom-audit download SERVER [HASH] [-v]
+  $ blossom-audit download SERVER [HASH] [-v] [--sec <value>] [--connect <value>]
 
 ARGUMENTS
   SERVER  The URL of the blossom server
   HASH    The sha256 hash of the blob to download
 
 FLAGS
-  -v, --verbose  Enable verbose logging
+  -v, --verbose          Enable verbose logging
+      --connect=<value>  A NIP-46 bunker URI that will be used to sign authorization events
+      --sec=<value>      A private key that will be used to sign authorization events
 
 DESCRIPTION
   Audit downloading a blob from a server

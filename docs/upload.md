@@ -11,14 +11,16 @@ Audit uploading a blob to a server
 
 ```
 USAGE
-  $ blossom-audit upload SERVER FILE [-v]
+  $ blossom-audit upload SERVER FILE [-v] [--sec <value>] [--connect <value>]
 
 ARGUMENTS
   SERVER  The URL of the server to upload to
   FILE    A path to a local file to upload. or "bitcoin" to use the built-in example file
 
 FLAGS
-  -v, --verbose  Enable verbose logging
+  -v, --verbose          Enable verbose logging
+      --connect=<value>  A NIP-46 bunker URI that will be used to sign authorization events
+      --sec=<value>      A private key that will be used to sign authorization events
 
 DESCRIPTION
   Audit uploading a blob to a server

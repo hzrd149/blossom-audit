@@ -11,14 +11,16 @@ Audit listing a public keys blobs on a server
 
 ```
 USAGE
-  $ blossom-audit list SERVER PUBKEY [-v]
+  $ blossom-audit list SERVER PUBKEY [-v] [--sec <value>] [--connect <value>]
 
 ARGUMENTS
   SERVER  The URL of the blossom server
   PUBKEY  The pubkey to use when fetching the list of blobs
 
 FLAGS
-  -v, --verbose  Enable verbose logging
+  -v, --verbose          Enable verbose logging
+      --connect=<value>  A NIP-46 bunker URI that will be used to sign authorization events
+      --sec=<value>      A private key that will be used to sign authorization events
 
 DESCRIPTION
   Audit listing a public keys blobs on a server
