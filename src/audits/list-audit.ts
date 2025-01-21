@@ -8,14 +8,18 @@ import { blobDescriptorShapeAudit } from "./blob-descriptor-shape.js";
 import { SingerContext } from "./context.js";
 import { endpointCorsHeadersAudit } from "./endpoint-cors-headers.js";
 import { errorResponseAudit } from "./error-response.js";
+import { responseCorsHeadersAudit } from "./response-cors-headers.js";
 
 export async function* listAudit(ctx: { server: string } & SingerContext, pubkey: string) {
   const endpoint = new URL("/list/" + pubkey, ctx.server);
 
-  yield* group("Check CORS", endpointCorsHeadersAudit(ctx, endpoint));
+  yield* group("CORS preflight", endpointCorsHeadersAudit(ctx, endpoint));
 
   // TODO: support since and until params
   let response = await fetchWithLogs(endpoint);
+
+  // check CORS headers
+  yield* group("CORS Headers", responseCorsHeadersAudit(ctx, response.headers));
 
   // check error response
   if (!response.ok) yield* group("Error response", errorResponseAudit(ctx, response));
@@ -41,6 +45,9 @@ export async function* listAudit(ctx: { server: string } & SingerContext, pubkey
       });
 
       if (!response.ok) yield* group("Error Response", errorResponseAudit(ctx, response));
+
+      // check CORS headers
+      yield* group("CORS Headers", responseCorsHeadersAudit(ctx, response.headers));
     } else {
       yield warn("Authentication is required but missing signer");
 

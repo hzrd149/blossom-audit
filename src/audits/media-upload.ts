@@ -51,12 +51,10 @@ async function* mediaUploadRequest(
   }
 
   // audit CORS headers
-  yield* group("CORS Response Headers", responseCorsHeadersAudit(ctx, response.headers));
+  yield* group("CORS Headers", responseCorsHeadersAudit(ctx, response.headers));
 
   // check error response
-  if (!response.ok) {
-    yield* group("Error Response", errorResponseAudit(ctx, response));
-  }
+  if (!response.ok) yield* group("Error Response", errorResponseAudit(ctx, response));
 
   // 401 auth required
   if (response.status === 401) {

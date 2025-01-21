@@ -60,6 +60,7 @@ export async function* uploadRequest(
 
   // 401 auth required
   if (upload.status === 401) {
+    // check authentication response
     yield* authenticationResponseAudit(ctx, upload);
 
     if (ctx.signer) {
@@ -81,7 +82,7 @@ export async function* uploadBlobAudit(
   blob: Blob,
 ): AsyncGenerator<Result, BlobDescriptor | undefined> {
   // check cors headers
-  yield* group("Check CORS", endpointCorsHeadersAudit(ctx, "/upload"));
+  yield* group("CORS preflight", endpointCorsHeadersAudit(ctx, "/upload"));
 
   // BUD-06 check
   const check = yield* group("Upload Check", uploadCheckAudit(ctx, blob));

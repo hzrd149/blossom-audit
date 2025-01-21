@@ -25,9 +25,8 @@ export async function* uploadCheckAudit(
     },
   });
 
-  if (!response.ok) {
-    yield* group("Error Response", errorResponseAudit(ctx, response));
-  }
+  // check error response
+  if (!response.ok) yield* group("Error Response", errorResponseAudit(ctx, response));
 
   // check if supported
   if (response.status === 404) {
