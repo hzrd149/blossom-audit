@@ -1,5 +1,11 @@
 # blossom-audit
 
+## 0.2.1
+
+### Patch Changes
+
+- 6216f21: Fix missing build files
+
 ## 0.2.0
 
 ### Minor Changes
