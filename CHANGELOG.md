@@ -1,5 +1,11 @@
 # blossom-audit
 
+## 0.2.2
+
+### Patch Changes
+
+- 24e066d: Update dependencies
+
 ## 0.2.1
 
 ### Patch Changes
