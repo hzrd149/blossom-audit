@@ -45,26 +45,26 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@noble/hashes": "^1.6.1",
-    "@oclif/core": "^4.2.0",
-    "@oclif/plugin-help": "^6",
-    "@oclif/plugin-plugins": "^5",
-    "applesauce-signer": "0.0.0-next-20250120191411",
+    "@noble/hashes": "^1.7.1",
+    "@oclif/core": "^4.2.10",
+    "@oclif/plugin-help": "^6.2.27",
+    "@oclif/plugin-plugins": "^5.4.36",
+    "applesauce-signers": "^0.12.0",
     "chalk": "^5.4.1",
     "chalk-template": "^1.1.0",
     "eventemitter3": "^5.0.1",
     "mime": "^4.0.6",
-    "nostr-tools": "^2.10.4",
+    "nostr-tools": "^2.11.0",
     "terminal-link": "^3.0.0"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.27.11",
-    "@types/node": "^22.10.2",
-    "oclif": "^4.17.7",
-    "prettier": "^3.4.2",
-    "typescript": "~5.6.2",
-    "vite": "^6.0.5",
-    "vite-plugin-dts": "^4.4.0"
+    "@changesets/cli": "^2.28.1",
+    "@types/node": "^22.13.10",
+    "oclif": "^4.17.37",
+    "prettier": "^3.5.3",
+    "typescript": "~5.6.3",
+    "vite": "^6.2.2",
+    "vite-plugin-dts": "^4.5.3"
   },
   "packageManager": "pnpm@9.14.4",
   "oclif": {

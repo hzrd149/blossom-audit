@@ -1,4 +1,5 @@
 import { Flags } from "@oclif/core";
+import { generateSecretKey, nip19 } from "nostr-tools";
 
 export const globalFlags = {
   verbose: Flags.boolean({

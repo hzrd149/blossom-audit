@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 import mime from "mime";
 import { nip19, SimplePool } from "nostr-tools";
 import { hexToBytes } from "@noble/hashes/utils";
-import { NostrConnectConnectionMethods, NostrConnectSigner, SimpleSigner } from "applesauce-signer";
+import { NostrConnectConnectionMethods, NostrConnectSigner, SimpleSigner } from "applesauce-signers";
 import { SubCloser } from "nostr-tools/abstract-pool";
 
 export const pool = new SimplePool();
