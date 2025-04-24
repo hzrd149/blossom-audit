@@ -35,3 +35,7 @@ npx blossom-audit audit https://blossom.example.com bitcoin --sec nsec1...
 ## Demo
 
 ![](./demo.gif)
+
+## TODO
+
+ - [ ] Validate HTTP 402 responses according to [NUT-23](https://github.com/cashubtc/nuts/pull/239)
